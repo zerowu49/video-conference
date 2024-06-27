@@ -45,5 +45,14 @@
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
-</dict>
+	<key>NSCameraUsageDescription</key>
+	<string>$(PRODUCT_NAME) require access to the camera</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>$(PRODUCT_NAME) equire access to the microphone</string>
+	<!-- Background mode for voice call -->
+	<key>UIBackgroundModes</key>
+		<array>
+			<string>audio</string>
+		</array>
+	</dict>
 </plist>
