@@ -1,0 +1,17 @@
+{
+    "version": "0.1.0",
+    "configurations": [
+        {
+            "name": "Development",
+            "program": "lib/main.dart",
+            "request": "launch",
+            "type": "dart", // Arguments to be passed to the Dart or Flutter app.
+            "args": [
+                "--dart-define",
+                "LIVEKIT_WEBSOCKET_URL=wss://videoconferencepikpo-c6x4sx5i.livekit.cloud", 
+                "--dart-define",
+                "LIVEKIT_API_KEY=APIfRoH5xsw7qFL", 
+            ],
+        },
+    ]
+}
