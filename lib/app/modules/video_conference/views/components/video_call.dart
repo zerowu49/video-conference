@@ -1,14 +1,11 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
 import 'package:video_conference/app/modules/video_conference/controllers/video_conference_controller.dart';
 import 'package:video_conference/app/modules/video_conference/views/components/people_card.dart';
 import 'package:video_conference/app/modules/video_conference/views/components/screen_card.dart';
 import 'package:video_conference/app/modules/video_conference/views/components/speaker_card.dart';
 import 'package:video_conference/app/modules/video_conference/views/components/transcript_call.dart';
-import 'package:video_conference/utils/spacing.dart';
-import 'package:video_conference/utils/typography.dart';
+import 'package:video_conference/utils/index.dart';
 
 class VideoCall extends StatelessWidget {
   const VideoCall({super.key});

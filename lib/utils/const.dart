@@ -1,3 +1,5 @@
+part of 'index.dart';
+
 class Const {
   static const String livekitWebsocketUrl =
       String.fromEnvironment('LIVEKIT_WEBSOCKET_URL', defaultValue: '');

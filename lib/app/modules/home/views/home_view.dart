@@ -1,11 +1,8 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 
 import 'package:get/get.dart';
 import 'package:video_conference/components/button/primary_button.dart';
-import 'package:video_conference/utils/spacing.dart';
-import 'package:video_conference/utils/typography.dart';
+import 'package:video_conference/utils/index.dart';
 
 import '../controllers/home_controller.dart';
 
@@ -64,6 +61,7 @@ class HomeView extends GetView<HomeController> {
                                     }
                                   : null,
                           text: "1-1",
+                          isLoading: controller.isJoining.value,
                         ),
                       ),
                       const SizedBox(width: Spacing.large),
@@ -76,6 +74,7 @@ class HomeView extends GetView<HomeController> {
                                     }
                                   : null,
                           text: "Group",
+                          isLoading: controller.isJoining.value,
                         ),
                       ),
                     ],

@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:video_conference/app/modules/video_conference/controllers/video_conference_controller.dart';
-import 'package:video_conference/utils/colors.dart';
-import 'package:video_conference/utils/spacing.dart';
-import 'package:video_conference/utils/typography.dart';
+import 'package:video_conference/utils/index.dart';
 
 class TranscriptCall extends StatelessWidget {
   const TranscriptCall({super.key});

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:video_conference/app/routes/app_pages.dart';
-import 'package:video_conference/utils/colors.dart';
+import 'package:video_conference/utils/index.dart';
 
 void main() {
   runApp(const MyApp());
