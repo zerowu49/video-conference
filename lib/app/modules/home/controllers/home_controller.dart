@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:livekit_client/livekit_client.dart';
 import 'package:video_conference/app/modules/home/views/components/dialog.dart';
+import 'package:video_conference/app/modules/video_conference/views/video_conference_view.dart';
 import 'package:video_conference/app/routes/app_pages.dart';
 import 'package:video_conference/utils/index.dart';
 
@@ -41,7 +42,11 @@ class HomeController extends GetxController {
       adaptiveStream: true,
       dynacast: true,
     );
-    final room = Room();
+    //create new room
+    final Room room = Room();
+
+    // Create a Listener before connecting
+    final EventsListener<RoomEvent> listener = room.createListener();
     try {
       loadingStatus.value = "Connecting to room...";
       update();
@@ -63,26 +68,36 @@ class HomeController extends GetxController {
       return;
     }
 
-    try {
-      loadingStatus.value = "Checking for camera access...";
-      update();
+    // try {
+    //   loadingStatus.value = "Checking for camera access...";
+    //   update();
 
-      // video will fail when running in ios simulator
-      await room.localParticipant?.setCameraEnabled(true);
-    } catch (e) {
-      // Close Dialog
-      Get.back();
-      // Show Toast
-      Get.snackbar(
-        'Failed to get camera access',
-        e.toString(),
-      );
-      resetVariableForFailedConnectingRoom();
-      return;
-    }
-    await room.localParticipant?.setMicrophoneEnabled(true);
+    //   // video will fail when running in ios simulator
+    //   // await room.localParticipant?.setCameraEnabled(true);
+    // } catch (e) {
+    //   // Close Dialog
+    //   Get.back();
+    //   // Show Toast
+    //   Get.snackbar(
+    //     'Failed to get camera access',
+    //     e.toString(),
+    //   );
+    //   resetVariableForFailedConnectingRoom();
+    //   return;
+    // }
+    // await room.localParticipant?.setMicrophoneEnabled(true);
+
+    // Close Dialog
+    Get.back();
+    resetVariableForFailedConnectingRoom();
 
     // Redirect to next page
-    Get.toNamed(Routes.VIDEO_CONFERENCE);
+    Get.toNamed(
+      Routes.VIDEO_CONFERENCE,
+      arguments: VideoConferenceArgs(
+        room: room,
+        listener: listener,
+      ),
+    );
   }
 }

@@ -1,117 +1,223 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_webrtc/flutter_webrtc.dart';
 import 'package:get/get.dart';
+import 'package:livekit_client/livekit_client.dart';
 import 'package:video_conference/app/modules/video_conference/controllers/video_conference_controller.dart';
+import 'package:video_conference/app/modules/video_conference/views/video_conference_page.dart';
 import 'package:video_conference/utils/index.dart';
 
-class PeopleCard extends StatelessWidget {
-  const PeopleCard({super.key});
+class PeopleImageCard extends StatefulWidget {
+  final String urlProfile;
+  final bool isWaiting, isMultipleParticipant;
 
-  Widget imageWithName({
-    required String name,
-    required String urlProfile,
-    bool isWaiting = false,
-    bool isMultipleParticipant = false,
-  }) {
+  final LocalParticipant participant;
+  final ParticipantTrackType type;
+
+  const PeopleImageCard(
+    this.participant,
+    this.type, {
+    super.key,
+    required this.urlProfile,
+    this.isWaiting = false,
+    this.isMultipleParticipant = false,
+  });
+
+  @override
+  State<PeopleImageCard> createState() => _PeopleImageCardState();
+}
+
+class _PeopleImageCardState extends State<PeopleImageCard> {
+  TrackPublication<VideoTrack>? get videoPublication =>
+      widget.participant.videoTrackPublications
+          .where((element) => element.source == widget.type.lkVideoSourceType)
+          .firstOrNull;
+  TrackPublication<AudioTrack>? get audioPublication =>
+      widget.participant.audioTrackPublications
+          .where((element) => element.source == widget.type.lkAudioSourceType)
+          .firstOrNull;
+
+  VideoTrack? get activeVideoTrack => videoPublication?.track;
+  AudioTrack? get activeAudioTrack => audioPublication?.track;
+
+  bool get isScreenShare => widget.type == ParticipantTrackType.kScreenShare;
+  EventsListener<ParticipantEvent>? _listener;
+
+  @override
+  void initState() {
+    super.initState();
+    _listener = widget.participant.createListener();
+    _listener?.on<TranscriptionEvent>((e) {
+      for (var seg in e.segments) {
+        print('Transcription: ${seg.text} ${seg.isFinal}');
+      }
+    });
+
+    widget.participant.addListener(_onParticipantChanged);
+    _onParticipantChanged();
+  }
+
+  @override
+  void dispose() {
+    widget.participant.removeListener(_onParticipantChanged);
+    _listener?.dispose();
+    super.dispose();
+  }
+
+  @override
+  void didUpdateWidget(covariant PeopleImageCard oldWidget) {
+    oldWidget.participant.removeListener(_onParticipantChanged);
+    widget.participant.addListener(_onParticipantChanged);
+    _onParticipantChanged();
+    super.didUpdateWidget(oldWidget);
+  }
+
+  // Notify Flutter that UI re-build is required, but we don't set anything here
+  // since the updated values are computed properties.
+  void _onParticipantChanged() => setState(() {});
+
+  @override
+  Widget build(BuildContext context) {
     final imageBorderRadius = BorderRadius.circular(50);
+
+    String userName = widget.participant.identity;
+    if (userName == "") {
+      userName = "You";
+    }
 
     return LayoutBuilder(
       builder: (context, constraints) {
-        final double maxImageHeight = isMultipleParticipant ? 150 : 300;
+        final double maxImageHeight = widget.isMultipleParticipant ? 150 : 300;
         final double maxHeight = constraints.maxHeight < maxImageHeight
             ? constraints.maxHeight
             : maxImageHeight;
 
-        return Container(
-          width: isMultipleParticipant ? maxHeight * 0.5 : null,
+        final imageHeight = maxHeight * 0.7;
+        final imageWidth = maxHeight * 0.5;
+        return SizedBox(
+          width: widget.isMultipleParticipant ? imageWidth : null,
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
-            children: isMultipleParticipant
+            children: widget.isMultipleParticipant
                 ? [
-                    Stack(
-                      alignment: Alignment.center,
-                      children: [
-                        ClipRRect(
-                          borderRadius: imageBorderRadius,
-                          child: Image.network(
-                            urlProfile,
-                            fit: BoxFit.cover,
-                            height: maxHeight * 0.7,
-                            width: maxHeight * 0.5,
-                          ),
-                        ),
-                        isWaiting
-                            ? Positioned(
-                                top: 0.0,
-                                left: 0.0,
-                                right: 0.0,
-                                bottom: 0.0,
-                                child: Container(
-                                  decoration: BoxDecoration(
-                                    borderRadius: imageBorderRadius,
-                                    color: Colors.grey.withOpacity(0.6),
+                    Flexible(
+                      child: Stack(
+                        alignment: Alignment.center,
+                        children: [
+                          ClipRRect(
+                            borderRadius: imageBorderRadius,
+                            child: activeVideoTrack != null &&
+                                    !activeVideoTrack!.muted
+                                ? Flexible(
+                                    child: SizedBox(
+                                      height: imageHeight,
+                                      width: imageWidth,
+                                      child: VideoTrackRenderer(
+                                        activeVideoTrack!,
+                                        fit: RTCVideoViewObjectFit
+                                            .RTCVideoViewObjectFitCover,
+                                      ),
+                                    ),
+                                  )
+                                : Image.network(
+                                    widget.urlProfile,
+                                    fit: BoxFit.cover,
+                                    height: imageHeight,
+                                    width: imageWidth,
                                   ),
-                                ),
-                              )
-                            : const SizedBox(),
-                        isWaiting
-                            ? Text(
-                                "Waiting ..",
-                                textAlign: TextAlign.center,
-                                style: MyRegularText.body1
-                                    .copyWith(color: Colors.black),
-                              )
-                            : const SizedBox(),
-                      ],
+                          ),
+                          widget.isWaiting
+                              ? Positioned(
+                                  top: 0.0,
+                                  left: 0.0,
+                                  right: 0.0,
+                                  bottom: 0.0,
+                                  child: Container(
+                                    decoration: BoxDecoration(
+                                      borderRadius: imageBorderRadius,
+                                      color: Colors.grey.withOpacity(0.6),
+                                    ),
+                                  ),
+                                )
+                              : const SizedBox(),
+                          widget.isWaiting
+                              ? Text(
+                                  "Waiting ..",
+                                  textAlign: TextAlign.center,
+                                  style: MyRegularText.body1
+                                      .copyWith(color: Colors.black),
+                                )
+                              : const SizedBox(),
+                        ],
+                      ),
                     ),
                     const SizedBox(height: Spacing.large),
                     Text(
-                      name,
+                      userName,
                       style: MyBoldText.body1,
-                      maxLines: 1,
+                      textAlign: TextAlign.center,
+                      maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                     ),
                   ]
                 : [
                     Text(
-                      name,
-                      style: MyBoldText.body1,
+                      userName,
+                      style: MyBoldText.body1.copyWith(),
+                      textAlign: TextAlign.center,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
                     ),
                     const SizedBox(height: Spacing.large),
-                    Stack(
-                      alignment: Alignment.center,
-                      children: [
-                        ClipRRect(
-                          borderRadius: imageBorderRadius,
-                          child: Image.network(
-                            urlProfile,
-                            fit: BoxFit.cover,
-                            height: maxHeight * 0.7,
-                            width: maxHeight * 0.5,
-                          ),
-                        ),
-                        isWaiting
-                            ? Positioned(
-                                top: 0.0,
-                                left: 0.0,
-                                right: 0.0,
-                                bottom: 0.0,
-                                child: Container(
-                                  decoration: BoxDecoration(
-                                    borderRadius: imageBorderRadius,
-                                    color: Colors.grey.withOpacity(0.6),
+                    Flexible(
+                      child: Stack(
+                        alignment: Alignment.center,
+                        children: [
+                          ClipRRect(
+                            borderRadius: imageBorderRadius,
+                            child: activeVideoTrack != null &&
+                                    !activeVideoTrack!.muted
+                                ? Flexible(
+                                    child: SizedBox(
+                                      height: imageHeight,
+                                      width: imageWidth,
+                                      child: VideoTrackRenderer(
+                                        activeVideoTrack!,
+                                        fit: RTCVideoViewObjectFit
+                                            .RTCVideoViewObjectFitCover,
+                                      ),
+                                    ),
+                                  )
+                                : Image.network(
+                                    widget.urlProfile,
+                                    fit: BoxFit.cover,
+                                    height: imageHeight,
+                                    width: imageWidth,
                                   ),
-                                ),
-                              )
-                            : const SizedBox(),
-                        isWaiting
-                            ? Text(
-                                "Waiting ...",
-                                textAlign: TextAlign.center,
-                                style: MyRegularText.body1
-                                    .copyWith(color: Colors.black),
-                              )
-                            : const SizedBox(),
-                      ],
+                          ),
+                          widget.isWaiting
+                              ? Positioned(
+                                  top: 0.0,
+                                  left: 0.0,
+                                  right: 0.0,
+                                  bottom: 0.0,
+                                  child: Container(
+                                    decoration: BoxDecoration(
+                                      borderRadius: imageBorderRadius,
+                                      color: Colors.grey.withOpacity(0.6),
+                                    ),
+                                  ),
+                                )
+                              : const SizedBox(),
+                          widget.isWaiting
+                              ? Text(
+                                  "Waiting ...",
+                                  textAlign: TextAlign.center,
+                                  style: MyRegularText.body1
+                                      .copyWith(color: Colors.black),
+                                )
+                              : const SizedBox(),
+                        ],
+                      ),
                     ),
                   ],
           ),
@@ -119,6 +225,15 @@ class PeopleCard extends StatelessWidget {
       },
     );
   }
+}
+
+class PeopleCard extends StatelessWidget {
+  final List<ParticipantTrack> participantTrack;
+
+  const PeopleCard({
+    super.key,
+    required this.participantTrack,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -126,8 +241,6 @@ class PeopleCard extends StatelessWidget {
       builder: (controller) {
         final isMicOn = controller.isMicOn.value;
         final isShareScreen = controller.isShareScreen.value;
-
-        final dataUserMap = controller.dataUser.asMap();
 
         return LayoutBuilder(
           builder: (_, constraints) {
@@ -140,13 +253,13 @@ class PeopleCard extends StatelessWidget {
               height: 0,
               child: Container(
                 padding: const EdgeInsets.all(Spacing.medium),
-                decoration: isShareScreen || controller.dataUser.length > 2
+                decoration: isShareScreen || participantTrack.length > 2
                     ? BoxDecoration(
                         borderRadius: BorderRadius.circular(Spacing.large),
                         color: MyColor.darkButton,
                       )
                     : null,
-                child: controller.dataUser.length <= 2
+                child: participantTrack.length <= 2
                     ? Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
@@ -166,25 +279,34 @@ class PeopleCard extends StatelessWidget {
                             flex: 4,
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.center,
-                              children: dataUserMap
-                                  .map((i, e) {
-                                    return MapEntry(
-                                      i,
-                                      Row(
-                                        children: [
-                                          imageWithName(
-                                            name: e['name'] as String,
-                                            urlProfile:
-                                                e['urlProfile'] as String,
-                                            isWaiting: e['isWaiting'] as bool,
+                              children: participantTrack.map(
+                                (currentParticipant) {
+                                  String userName =
+                                      currentParticipant.participant.identity;
+                                  if (userName == "") {
+                                    userName = "You";
+                                  }
+
+                                  return Flexible(
+                                    child: Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        Flexible(
+                                          child: PeopleImageCard(
+                                            currentParticipant.participant
+                                                as LocalParticipant,
+                                            currentParticipant.type,
+                                            urlProfile: controller.dataUser[0]
+                                                ['urlProfile'] as String,
                                           ),
-                                          SizedBox(width: Spacing.medium),
-                                        ],
-                                      ),
-                                    );
-                                  })
-                                  .values
-                                  .toList(),
+                                        ),
+                                        SizedBox(width: Spacing.medium),
+                                      ],
+                                    ),
+                                  );
+                                },
+                              ).toList(),
                             ),
                           ),
                         ],
@@ -203,7 +325,7 @@ class PeopleCard extends StatelessWidget {
                                   ),
                                   SizedBox(width: Spacing.small),
                                   Text(
-                                    "You & ${controller.dataUser.length - 1} participants",
+                                    "You & ${participantTrack.length - 1} participants",
                                     style: MyRegularText.body1.copyWith(
                                       color: MyColor.green,
                                     ),
@@ -226,26 +348,27 @@ class PeopleCard extends StatelessWidget {
                             child: SingleChildScrollView(
                               scrollDirection: Axis.horizontal,
                               child: Row(
-                                children: dataUserMap
-                                    .map((i, e) {
-                                      return MapEntry(
-                                        i,
-                                        Row(
-                                          children: [
-                                            imageWithName(
-                                              name: e['name'] as String,
-                                              urlProfile:
-                                                  e['urlProfile'] as String,
-                                              isWaiting: e['isWaiting'] as bool,
-                                              isMultipleParticipant: true,
-                                            ),
-                                            SizedBox(width: Spacing.medium),
-                                          ],
+                                children: participantTrack.map(
+                                  (currentParticipant) {
+                                    String userName =
+                                        currentParticipant.participant.identity;
+                                    if (userName == "") {
+                                      userName = "You";
+                                    }
+                                    return Row(
+                                      children: [
+                                        PeopleImageCard(
+                                          currentParticipant.participant
+                                              as LocalParticipant,
+                                          currentParticipant.type,
+                                          urlProfile: controller.dataUser[0]
+                                              ['urlProfile'] as String,
                                         ),
-                                      );
-                                    })
-                                    .values
-                                    .toList(),
+                                        SizedBox(width: Spacing.medium),
+                                      ],
+                                    );
+                                  },
+                                ).toList(),
                               ),
                             ),
                           ),

@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:video_conference/app/modules/video_conference/views/components/dialog.dart';
+import 'package:video_conference/app/modules/video_conference/views/video_conference_view.dart';
 
 class VideoConferenceController extends GetxController {
   static VideoConferenceController find() => Get.find();
 
+  final VideoConferenceArgs args = Get.arguments;
+
   // Room Info
-  final roomName = "On Air Studio".obs;
   final roomTag = "+broadcast.org".obs;
   final dataUser = [
     {
@@ -80,12 +83,28 @@ class VideoConferenceController extends GetxController {
     update();
   }
 
-  void changeMicStatus(bool status) {
+  void changeMicStatus(bool status) async {
+    if (status) {
+      print("enabling mic");
+    } else {
+      print("disabling mic");
+    }
+    // Change the status in room class
+    await args.room.localParticipant?.setMicrophoneEnabled(status);
+    // Change the status in local variable
     isMicOn.value = status;
     update();
   }
 
-  void changeVideoStatus(bool status) {
+  void changeVideoStatus(bool status) async {
+    if (status) {
+      print("enabling video");
+    } else {
+      print("disabling video");
+    }
+    // Change the status in room class
+    await args.room.localParticipant?.setCameraEnabled(status);
+    // Change the status in local variable
     isVideoOn.value = status;
     update();
   }
@@ -108,5 +127,10 @@ class VideoConferenceController extends GetxController {
   void changeChatInput(String message) {
     chatTextController.value.text = message;
     update();
+  }
+
+  void exitRoom() async {
+    final result = await showDisconnectDialog();
+    if (result == true) await args.room.disconnect();
   }
 }

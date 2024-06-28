@@ -14,3 +14,6 @@ This project assume that:
 ```
 flutter run --dart-define=LIVEKIT_WEBSOCKET_URL=<replace> --dart-define=LIVEKIT_TOKEN=<replace>
 ```
+Notes:
+Please generate your token based on configuration as documentation here 
+[docs: https://docs.livekit.io/realtime/server/generating-tokens/]

@@ -11,6 +11,8 @@ class HeaderCall extends StatelessWidget {
     return GetBuilder<VideoConferenceController>(
       builder: (controller) {
         final isMaximizeTranscript = controller.isMaximizeTranscript.value;
+        final roomName = controller.args.room.name ?? '';
+        final roomTag = controller.roomTag.value;
 
         return AnimatedContainer(
           duration: const Duration(milliseconds: 600),
@@ -27,11 +29,11 @@ class HeaderCall extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        controller.roomName.value,
+                        roomName,
                         style: MyBoldText.body1,
                       ),
                       Text(
-                        controller.roomTag.value,
+                        roomTag,
                         style: MyMediumText.caption1,
                       ),
                     ],
@@ -41,7 +43,7 @@ class HeaderCall extends StatelessWidget {
               IconButton(
                 tooltip: "Exit Room",
                 onPressed: () {
-                  Get.back();
+                  controller.exitRoom();
                 },
                 icon: Image.asset("asset/images/ic_exit.png"),
               )

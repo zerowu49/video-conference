@@ -5,11 +5,13 @@ class PrimaryButton extends StatelessWidget {
   final Function()? onPressed;
   final String text;
   final bool isLoading;
+  final bool isNormalShape;
   const PrimaryButton({
     super.key,
     required this.onPressed,
     required this.text,
     required this.isLoading,
+    this.isNormalShape = false,
   });
 
   @override
@@ -20,9 +22,11 @@ class PrimaryButton extends StatelessWidget {
         style: ElevatedButton.styleFrom(
           backgroundColor: MyColor.primary,
           foregroundColor: Colors.white,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(Spacing.medium),
-          ),
+          shape: isNormalShape
+              ? null
+              : RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(Spacing.medium),
+                ),
         ),
         child: isLoading
             ? Container(
@@ -33,10 +37,10 @@ class PrimaryButton extends StatelessWidget {
                 ),
               )
             : Container(
-                padding: Spacing.paddingVerticallarge,
+                padding: isNormalShape ? null : Spacing.paddingVerticallarge,
                 child: Text(
                   text,
-                  style: MyBoldText.body1,
+                  style: isNormalShape ? null : MyBoldText.body1,
                 ),
               ),
       ),

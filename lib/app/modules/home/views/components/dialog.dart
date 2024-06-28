@@ -30,6 +30,7 @@ class HomeDialog extends StatelessWidget {
                 const SizedBox(height: Spacing.large),
                 Text(
                   text,
+                  textAlign: TextAlign.center,
                   style: MyMediumText.header5.copyWith(
                     color: Colors.black,
                   ),

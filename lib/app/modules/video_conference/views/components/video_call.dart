@@ -5,10 +5,16 @@ import 'package:video_conference/app/modules/video_conference/views/components/p
 import 'package:video_conference/app/modules/video_conference/views/components/screen_card.dart';
 import 'package:video_conference/app/modules/video_conference/views/components/speaker_card.dart';
 import 'package:video_conference/app/modules/video_conference/views/components/transcript_call.dart';
+import 'package:video_conference/app/modules/video_conference/views/video_conference_page.dart';
 import 'package:video_conference/utils/index.dart';
 
 class VideoCall extends StatelessWidget {
-  const VideoCall({super.key});
+  final List<ParticipantTrack> participantTrack;
+
+  const VideoCall({
+    super.key,
+    required this.participantTrack,
+  });
 
   Widget imageWithName({
     required String name,
@@ -23,7 +29,6 @@ class VideoCall extends StatelessWidget {
         final double maxHeight = constraints.maxHeight < maxImageHeight
             ? constraints.maxHeight
             : maxImageHeight;
-        print("maxHeight: $maxHeight");
 
         return Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -79,16 +84,24 @@ class VideoCall extends StatelessWidget {
   Widget build(BuildContext context) {
     return GetBuilder<VideoConferenceController>(
       builder: (controller) {
-        return const Column(
+        final List<ParticipantTrack> userScreenShare = participantTrack
+            .where(
+                (element) => element.participant.isScreenShareEnabled() == true)
+            .toList();
+        return Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            ScreenCard(),
-            SpeakerCard(),
+            const ScreenCard(),
+            userScreenShare.isNotEmpty
+                ? SpeakerCard(currentUser: userScreenShare.first)
+                : const SizedBox.shrink(),
             Expanded(
-              child: PeopleCard(),
+              child: PeopleCard(
+                participantTrack: participantTrack,
+              ),
             ),
-            SizedBox(height: Spacing.large),
-            TranscriptCall(),
+            const SizedBox(height: Spacing.large),
+            const TranscriptCall(),
           ],
         );
       },
