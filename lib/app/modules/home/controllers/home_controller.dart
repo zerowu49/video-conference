@@ -48,7 +48,7 @@ class HomeController extends GetxController {
 
       await room.connect(
         Const.livekitWebsocketUrl,
-        Const.livekitAPIKey,
+        Const.livekitToken,
         roomOptions: roomOptions,
       );
     } catch (e) {

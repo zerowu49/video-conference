@@ -12,5 +12,5 @@ This project assume that:
 ## Run Syntax
 
 ```
-flutter run --dart-define=LIVEKIT_WEBSOCKET_URL=<replace> --dart-define=LIVEKIT_API_KEY=<replace>
+flutter run --dart-define=LIVEKIT_WEBSOCKET_URL=<replace> --dart-define=LIVEKIT_TOKEN=<replace>
 ```

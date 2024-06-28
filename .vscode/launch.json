@@ -10,7 +10,7 @@
                 "--dart-define",
                 "LIVEKIT_WEBSOCKET_URL=wss://videoconferencepikpo-c6x4sx5i.livekit.cloud", 
                 "--dart-define",
-                "LIVEKIT_API_KEY=APIfRoH5xsw7qFL", 
+                "LIVEKIT_TOKEN=eyJhbGciOiJIUzI1NiJ9.eyJ2aWRlbyI6eyJyb29tSm9pbiI6dHJ1ZSwicm9vbSI6InF1aWNrc3RhcnQtcm9vbSJ9LCJpc3MiOiJBUElmUm9INXhzdzdxRkwiLCJleHAiOjE3MTk1NDM1MTMsIm5iZiI6MCwic3ViIjoicXVpY2tzdGFydC11c2VybmFtZSJ9.MytiKBeW66B8nEeMp4uprNe8ZtQNoyZDONoVJO89Zc0", 
             ],
         },
     ]
