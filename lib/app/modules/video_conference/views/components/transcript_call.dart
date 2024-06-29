@@ -94,20 +94,22 @@ class TranscriptCall extends StatelessWidget {
                   child: SingleChildScrollView(
                     child: Column(
                       children: [
-                        chatBox(
-                          name: "Maria Lopez",
-                          urlProfile:
-                              "https://upload.wikimedia.org/wikipedia/commons/8/86/Woman_at_Lover%27s_Bridge_Tanjung_Sepat_%28cropped%29.jpg",
-                          chat:
-                              "How was the experience working in the live broadcast department on the Olympics? Must be nerve wrecking?",
+                        ...controller.dataTranscript.map(
+                          (element) => chatBox(
+                            name: element['name'] as String,
+                            urlProfile: element['urlProfile'] as String,
+                            chat: element['chat'] as String,
+                          ),
                         ),
-                        chatBox(
-                          name: "Yaya Toure",
-                          urlProfile:
-                              "https://images.pexels.com/photos/2379004/pexels-photo-2379004.jpeg?auto=compress&cs=tinysrgb&dpr=1&w=500",
-                          chat:
-                              "It was a good experience, I enjoyed my time there. How’s things back at the office?",
-                        ),
+                        if (controller.lastWords.value != '')
+                          chatBox(
+                            name: controller
+                                    .args.room.localParticipant?.identity ??
+                                'You',
+                            urlProfile:
+                                controller.dataUser[0]['urlProfile'] as String,
+                            chat: controller.lastWords.value,
+                          ),
                       ],
                     ),
                   ),

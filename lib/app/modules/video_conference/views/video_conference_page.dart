@@ -134,11 +134,11 @@ class VideoConferencePageState extends State<VideoConferencePage> {
       print('could not publish audio: $error');
       await showErrorDialog(error);
     }
-
     // Update variable
     final controller = VideoConferenceController.find();
     controller.changeMicStatus(true);
     controller.changeVideoStatus(true);
+    controller.initSpeechState();
   }
 
   void _onRoomDidUpdate() {

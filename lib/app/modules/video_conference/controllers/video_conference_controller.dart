@@ -1,7 +1,12 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_background/flutter_background.dart';
 import 'package:get/get.dart';
 import 'package:livekit_client/livekit_client.dart';
+import 'package:speech_to_text/speech_recognition_error.dart';
+import 'package:speech_to_text/speech_recognition_result.dart';
+import 'package:speech_to_text/speech_to_text.dart';
 import 'package:video_conference/app/modules/video_conference/views/components/dialog.dart';
 import 'package:video_conference/app/modules/video_conference/views/video_conference_view.dart';
 
@@ -9,6 +14,11 @@ class VideoConferenceController extends GetxController {
   static VideoConferenceController find() => Get.find();
 
   final VideoConferenceArgs args = Get.arguments;
+
+  @override
+  void onInit() {
+    super.onInit();
+  }
 
   // Room Info
   final roomTag = "+broadcast.org".obs;
@@ -76,11 +86,106 @@ class VideoConferenceController extends GetxController {
 
   // Transcript
   final isMaximizeTranscript = false.obs;
+  final isSpeaking = false.obs;
+  final SpeechToText speech = SpeechToText();
+  final lastWords = "".obs;
+  final currentLocaleId = "".obs;
+  final dataTranscript = [
+    {
+      "name": "Maria Lopez",
+      "urlProfile":
+          "https://upload.wikimedia.org/wikipedia/commons/8/86/Woman_at_Lover%27s_Bridge_Tanjung_Sepat_%28cropped%29.jpg",
+      "chat":
+          "How was the experience working in the live broadcast department on the Olympics? Must be nerve wrecking?",
+    },
+    {
+      "name": "Yaya Toure",
+      "urlProfile":
+          "https://images.pexels.com/photos/2379004/pexels-photo-2379004.jpeg?auto=compress&cs=tinysrgb&dpr=1&w=500",
+      "chat":
+          "It was a good experience, I enjoyed my time there. How’s things back at the office?",
+    }
+  ].obs;
 
   // Chat
   final isReadChat = false.obs;
   final isSendingChat = false.obs;
   final chatTextController = TextEditingController().obs;
+
+  void statusListener(String status) {
+    log('Received listener status: $status, listening: ${speech.isListening}');
+  }
+
+  void errorListener(SpeechRecognitionError error) {
+    log('Received error status: $error, listening: ${speech.isListening}');
+  }
+
+  // This is called each time the users wants to start a new speech
+  // recognition session
+  void startListening() {
+    lastWords.value = '';
+    int pauseFor = 10;
+    int listenFor = 30;
+    final options = SpeechListenOptions(
+      onDevice: false,
+      listenMode: ListenMode.confirmation,
+      // cancelOnError: true,
+      partialResults: true,
+      autoPunctuation: true,
+      enableHapticFeedback: true,
+    );
+    // Note that `listenFor` is the maximum, not the minimum, on some
+    // systems recognition will be stopped before this value is reached.
+    // Similarly `pauseFor` is a maximum not a minimum and may be ignored
+    // on some devices.
+    speech.listen(
+      onResult: resultListener,
+      listenFor: Duration(seconds: listenFor),
+      pauseFor: Duration(seconds: pauseFor),
+      localeId: currentLocaleId.value,
+      listenOptions: options,
+    );
+  }
+
+  Future<void> initSpeechState() async {
+    try {
+      var hasSpeech = await speech.initialize(
+        onError: errorListener,
+        onStatus: statusListener,
+        debugLogging: true,
+        options: [
+          SpeechToText.androidIntentLookup,
+        ],
+      );
+
+      if (hasSpeech) {
+        var systemLocale = await speech.systemLocale();
+        currentLocaleId.value = systemLocale?.localeId ?? '';
+
+        /// Directly listening
+        startListening();
+      } else {
+        await showErrorDialog(
+          "Speech recognition isn't available on this device yet",
+        );
+      }
+    } catch (e) {
+      // lastError = 'Speech recognition failed: ${e.toString()}';
+    }
+  }
+
+  /// This callback is invoked each time new recognition results are
+  /// available after `listen` is called.
+  void resultListener(SpeechRecognitionResult result) {
+    log('Result listener final: ${result.finalResult}, words: ${result.recognizedWords}');
+    lastWords.value = result.recognizedWords;
+    update();
+  }
+
+  void stopListening() {
+    speech.stop();
+    update();
+  }
 
   void changeShareScreenStatus(bool status) async {
     if (status) {
@@ -141,13 +246,16 @@ class VideoConferenceController extends GetxController {
   }
 
   void changeMicStatus(bool status) async {
-    if (status) {
-      print("enabling mic");
-    } else {
-      print("disabling mic");
-    }
     // Change the status in room class
-    await args.room.localParticipant?.setMicrophoneEnabled(status);
+    if (status) {
+      log("enabling mic");
+      await args.room.localParticipant?.setMicrophoneEnabled(false);
+      startListening();
+    } else {
+      log("disabling mic");
+      stopListening();
+    }
+    // await args.room.localParticipant?.setMicrophoneEnabled(status);
     // Change the status in local variable
     isMicOn.value = status;
     update();

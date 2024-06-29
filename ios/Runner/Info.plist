@@ -48,7 +48,9 @@
 	<key>NSCameraUsageDescription</key>
 	<string>$(PRODUCT_NAME) require access to the camera</string>
 	<key>NSMicrophoneUsageDescription</key>
-	<string>$(PRODUCT_NAME) equire access to the microphone</string>
+	<string>$(PRODUCT_NAME) require access to the microphone</string>
+	<key>NSSpeechRecognitionUsageDescription</key>
+	<string>$(PRODUCT_NAME) recognize words as you speak them for transcript</string>
 	<!-- Background mode for voice call -->
 	<key>UIBackgroundModes</key>
 		<array>
