@@ -8,9 +8,9 @@ This project assume that:
 
 - Initial app is loaded using dark theme by default
 - Font family set to "Poppins" which quite similar since the font of "LEMON MILK Pro" isn't the same as Google Font's "Lemon" font family. 
-- Adding new "share-screen" button
+- Adding new `share-screen` button
 - Transcription use `speech_to_text` package to generate transcript
-- 
+- Assume that `1-1` and `Group` method generate same room (which in real case may differ according to business needs)
 
 ## Step-by-step to run App
 
@@ -28,6 +28,5 @@ This project assume that:
 flutter run --dart-define=LIVEKIT_WEBSOCKET_URL=<replace> --dart-define=LIVEKIT_TOKEN=<replace>
 ```
 
-Details for step 1-4:
-Please generate your token based on configuration as documentation here 
-[docs: https://docs.livekit.io/realtime/server/generating-tokens/]
+More detail for step 1-4 for
+generating token based on configuration : [Docs](https://docs.livekit.io/realtime/server/generating-tokens/)
