@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:video_conference/app/modules/video_conference/controllers/video_conference_controller.dart';
@@ -216,30 +218,97 @@ class ButtonCall extends StatelessWidget {
         final isTranscriptOpen = controller.isTranscriptOpen.value;
         final isChatOpen = controller.isChatOpen.value;
         final totalNewChat = controller.dataChat.length;
+        final isScreenShare =
+            controller.args.room.localParticipant!.isScreenShareEnabled();
         return Container(
           padding: const EdgeInsets.symmetric(
-            horizontal: Spacing.large,
             vertical: 2 * Spacing.large,
           ),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              IconButton(
-                tooltip: isMicOn ? "Mute" : "Unmute",
-                onPressed: () {
-                  controller.changeMicStatus(isMicOn ? false : true);
-                },
-                icon: Image.asset(
-                  "asset/images/ic_mic_${isMicOn ? "on" : "off"}.png",
+              ElevatedButton(
+                onPressed: () =>
+                    controller.changeMicStatus(isMicOn ? false : true),
+                style: ElevatedButton.styleFrom(
+                  shape: const CircleBorder(),
+                  backgroundColor: MyColor.darkButton,
+                ),
+                child: Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    if (!isMicOn)
+                      Transform(
+                        alignment: Alignment.center,
+                        transform:
+                            Matrix4.rotationZ(45 * pi / 180), // 45 degree
+                        child: Container(
+                          color: Colors.red,
+                          width: 2,
+                          height: 30,
+                        ),
+                      ),
+                    Icon(
+                      Icons.mic_none,
+                      color: !isMicOn ? Colors.grey : Colors.white,
+                    ),
+                  ],
                 ),
               ),
-              IconButton(
-                tooltip: isVideoOn ? "Close Camera" : "Open Camera",
-                onPressed: () {
-                  controller.changeVideoStatus(isVideoOn ? false : true);
-                },
-                icon: Image.asset(
-                  "asset/images/ic_video_${isVideoOn ? "on" : "off"}.png",
+              ElevatedButton(
+                onPressed: () =>
+                    controller.changeVideoStatus(isVideoOn ? false : true),
+                style: ElevatedButton.styleFrom(
+                  shape: const CircleBorder(),
+                  backgroundColor: MyColor.darkButton,
+                ),
+                child: Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    if (!isVideoOn)
+                      Transform(
+                        alignment: Alignment.center,
+                        transform:
+                            Matrix4.rotationZ(45 * pi / 180), // 45 degree
+                        child: Container(
+                          color: Colors.red,
+                          width: 2,
+                          height: 30,
+                        ),
+                      ),
+                    Icon(
+                      Icons.videocam_outlined,
+                      color: !isVideoOn ? Colors.grey : Colors.white,
+                    ),
+                  ],
+                ),
+              ),
+              ElevatedButton(
+                onPressed: () => controller
+                    .changeShareScreenStatus(isScreenShare ? false : true),
+                style: ElevatedButton.styleFrom(
+                  shape: const CircleBorder(),
+                  backgroundColor: MyColor.darkButton,
+                ),
+                child: Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    if (!isScreenShare)
+                      Transform(
+                        alignment: Alignment.center,
+                        transform:
+                            Matrix4.rotationZ(45 * pi / 180), // 45 degree
+                        child: Container(
+                          color: Colors.red,
+                          width: 2,
+                          height: 30,
+                        ),
+                      ),
+                    Icon(
+                      Icons.monitor_outlined,
+                      color: !isScreenShare ? Colors.grey : Colors.white,
+                    ),
+                  ],
                 ),
               ),
               ElevatedButton(

@@ -86,20 +86,33 @@ class VideoCall extends StatelessWidget {
       builder: (controller) {
         final List<ParticipantTrack> userScreenShare = participantTrack
             .where(
-                (element) => element.participant.isScreenShareEnabled() == true)
+                (element) => element.type == ParticipantTrackType.kScreenShare)
             .toList();
+
+        // Remove the identity that same like screenshare
+        // since if the user screenshare, the participantTrack
+        // will list them differently resulting into two data
+        if (userScreenShare.isNotEmpty) {
+          participantTrack.removeWhere((element) =>
+              element.participant.identity ==
+              userScreenShare.first.participant.identity);
+        }
+
         return Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const ScreenCard(),
+            userScreenShare.isNotEmpty
+                ? ScreenCard(currentUser: userScreenShare.first)
+                : const SizedBox.shrink(),
             userScreenShare.isNotEmpty
                 ? SpeakerCard(currentUser: userScreenShare.first)
                 : const SizedBox.shrink(),
-            Expanded(
-              child: PeopleCard(
-                participantTrack: participantTrack,
+            if (participantTrack.isNotEmpty)
+              Expanded(
+                child: PeopleCard(
+                  participantTrack: participantTrack,
+                ),
               ),
-            ),
             const SizedBox(height: Spacing.large),
             const TranscriptCall(),
           ],

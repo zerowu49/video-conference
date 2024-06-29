@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_background/flutter_background.dart';
 import 'package:get/get.dart';
+import 'package:livekit_client/livekit_client.dart';
 import 'package:video_conference/app/modules/video_conference/views/components/dialog.dart';
 import 'package:video_conference/app/modules/video_conference/views/video_conference_view.dart';
 
@@ -78,7 +80,60 @@ class VideoConferenceController extends GetxController {
   // Chat
   final chatTextController = TextEditingController().obs;
 
-  void changeShareScreenStatus(bool status) {
+  void changeShareScreenStatus(bool status) async {
+    if (status) {
+      if (lkPlatformIs(PlatformType.android)) {
+        // Android specific
+        requestBackgroundPermission([bool isRetry = false]) async {
+          // Required for android screenshare.
+          try {
+            bool hasPermissions = await FlutterBackground.hasPermissions;
+            if (!isRetry) {
+              const androidConfig = FlutterBackgroundAndroidConfig(
+                notificationTitle: 'Screen Sharing',
+                notificationText: 'LiveKit is sharing the screen.',
+                notificationImportance: AndroidNotificationImportance.Default,
+                notificationIcon: AndroidResource(
+                  name: 'ic_launcher',
+                  defType: 'mipmap',
+                ),
+              );
+
+              hasPermissions = await FlutterBackground.initialize(
+                androidConfig: androidConfig,
+              );
+            }
+            if (hasPermissions &&
+                !FlutterBackground.isBackgroundExecutionEnabled) {
+              await FlutterBackground.enableBackgroundExecution();
+            }
+          } catch (e) {
+            if (!isRetry) {
+              return await Future<void>.delayed(const Duration(seconds: 1),
+                  () => requestBackgroundPermission(true));
+            }
+            print('could not share screen: $e');
+          }
+        }
+
+        await requestBackgroundPermission();
+      } else if (lkPlatformIs(PlatformType.iOS)) {
+        var track = await LocalVideoTrack.createScreenShareTrack(
+          const ScreenShareCaptureOptions(
+            useiOSBroadcastExtension: true,
+            maxFrameRate: 15.0,
+          ),
+        );
+        await args.room.localParticipant?.publishVideoTrack(track);
+        return;
+      }
+      await args.room.localParticipant?.setScreenShareEnabled(
+        true,
+        captureScreenAudio: true,
+      );
+    } else {
+      await args.room.localParticipant?.setScreenShareEnabled(false);
+    }
     isShareScreen.value = status;
     update();
   }

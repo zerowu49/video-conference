@@ -17,6 +17,7 @@ dependencies:
   google_fonts: ^5.1.0
   livekit_client: ^2.2.0
   flutter_webrtc: ^0.10.8
+  flutter_background: ^1.1.0
 
   cupertino_icons: ^1.0.6
 

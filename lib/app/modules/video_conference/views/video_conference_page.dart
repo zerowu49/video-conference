@@ -235,8 +235,9 @@ class VideoConferencePageState extends State<VideoConferencePage> {
             const HeaderCall(),
             Expanded(
               child: participantTracks.isEmpty
-                  ? Center(
-                      child: Text("No participant yet"),
+                  ? const Center(
+                      child: Text(
+                          "No participant yet. Please activate your camera so you could be seen"),
                     )
                   : VideoCall(
                       participantTrack: participantTracks,

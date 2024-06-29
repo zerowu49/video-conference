@@ -8,7 +8,7 @@ import 'package:video_conference/utils/index.dart';
 
 class PeopleImageCard extends StatefulWidget {
   final String urlProfile;
-  final bool isWaiting, isMultipleParticipant;
+  final bool isWaiting, isMultipleParticipant, forShareScreen;
 
   final LocalParticipant participant;
   final ParticipantTrackType type;
@@ -20,6 +20,7 @@ class PeopleImageCard extends StatefulWidget {
     required this.urlProfile,
     this.isWaiting = false,
     this.isMultipleParticipant = false,
+    this.forShareScreen = false,
   });
 
   @override
@@ -93,6 +94,27 @@ class _PeopleImageCardState extends State<PeopleImageCard> {
 
         final imageHeight = maxHeight * 0.7;
         final imageWidth = maxHeight * 0.5;
+
+        if (widget.forShareScreen) {
+          return activeVideoTrack != null && !activeVideoTrack!.muted
+              ? Flexible(
+                  child: SizedBox(
+                    height: imageHeight,
+                    width: imageWidth,
+                    child: VideoTrackRenderer(
+                      activeVideoTrack!,
+                      fit: RTCVideoViewObjectFit.RTCVideoViewObjectFitCover,
+                    ),
+                  ),
+                )
+              : Image.network(
+                  widget.urlProfile,
+                  fit: BoxFit.cover,
+                  height: imageHeight,
+                  width: imageWidth,
+                );
+        }
+
         return SizedBox(
           width: widget.isMultipleParticipant ? imageWidth : null,
           child: Column(
@@ -106,7 +128,8 @@ class _PeopleImageCardState extends State<PeopleImageCard> {
                           ClipRRect(
                             borderRadius: imageBorderRadius,
                             child: activeVideoTrack != null &&
-                                    !activeVideoTrack!.muted
+                                    !activeVideoTrack!.muted &&
+                                    !isScreenShare
                                 ? Flexible(
                                     child: SizedBox(
                                       height: imageHeight,
@@ -175,7 +198,8 @@ class _PeopleImageCardState extends State<PeopleImageCard> {
                           ClipRRect(
                             borderRadius: imageBorderRadius,
                             child: activeVideoTrack != null &&
-                                    !activeVideoTrack!.muted
+                                    !activeVideoTrack!.muted &&
+                                    !isScreenShare
                                 ? Flexible(
                                     child: SizedBox(
                                       height: imageHeight,
