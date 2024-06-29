@@ -42,7 +42,7 @@ class VideoConferenceController extends GetxController {
     {
       'name': "Gaby G",
       'imageUrl':
-          'https://cdns.klimg.com/dream.co.id/resources/news/2022/03/22/194557/1200x600-beda-potret-lulu-tobing-kenakan-hijab-saat-umroh-perdana-220322t.jpg',
+          'https://static.vecteezy.com/system/resources/previews/025/474/309/large_2x/portrait-of-a-professional-woman-in-a-suit-business-woman-standing-in-an-office-ai-generated-photo.jpg',
       'time': "12:15PM",
       'chat': 'Go People Go!',
       'like': 1,
@@ -78,6 +78,8 @@ class VideoConferenceController extends GetxController {
   final isMaximizeTranscript = false.obs;
 
   // Chat
+  final isReadChat = false.obs;
+  final isSendingChat = false.obs;
   final chatTextController = TextEditingController().obs;
 
   void changeShareScreenStatus(bool status) async {
@@ -187,5 +189,37 @@ class VideoConferenceController extends GetxController {
   void exitRoom() async {
     final result = await showDisconnectDialog();
     if (result == true) await args.room.disconnect();
+  }
+
+  void openChat(bool status) {
+    isReadChat.value = status;
+    update();
+  }
+
+  void sendChat() {
+    isSendingChat.value = true;
+    update();
+
+    // Simulate sending chat to API
+    Future.delayed(
+      const Duration(seconds: 1),
+      () {
+        // Add chat
+        dataChat.add(
+          {
+            'name': args.room.localParticipant?.identity ?? '',
+            'imageUrl':
+                'https://static.vecteezy.com/system/resources/previews/025/474/309/large_2x/portrait-of-a-professional-woman-in-a-suit-business-woman-standing-in-an-office-ai-generated-photo.jpg',
+            'time': "12:25PM",
+            'chat': chatTextController.value.text,
+            'like': 1,
+          },
+        );
+        // Reset variable
+        isSendingChat.value = false;
+        chatTextController.value.text = "";
+        update();
+      },
+    );
   }
 }
